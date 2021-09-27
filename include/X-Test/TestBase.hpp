@@ -25,6 +25,8 @@ namespace xtst
         static void newl() { print_stack("\n"); }
 
         public:
+        static void inc_idt() { idt++; }
+        static void dec_idt() { idt--; }
         static bool run_tests();
         static void print_stack(const std::string&);
         static void register_buffer(buffer_t);
