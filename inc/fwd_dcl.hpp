@@ -1,7 +1,7 @@
 #ifndef X_TEST_FWD_DCL_HPP
 #define X_TEST_FWD_DCL_HPP
 
-#include "X-Test/stl_includes.hpp"
+#include "stl_includes.hpp"
 
 
 namespace xtst

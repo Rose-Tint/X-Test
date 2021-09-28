@@ -1,0 +1,7 @@
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/XTest.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/install/local.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/install.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/edit_cache.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/rebuild_cache.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/list_install_components.dir
+C:/Users/Owner/Documents/VSCode/X-Test/build/CMakeFiles/install/strip.dir

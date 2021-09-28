@@ -1,22 +1,32 @@
 cmake_minimum_required ( VERSION 3.10 )
 
-project ( XTest CXX VERSION 1.0 )
+project ( XTest LANGUAGES CXX VERSION 1.0 )
 
 add_definitions(-std=c++17)
 
 set ( CMAKE_CXX_STANDARD 17 )
 set ( CMAKE_CXX_STANDARD_REQUIRED True )
 
-if ( USE_X_TEST )
-    add_subdirectory ( X-Test )
-    list ( APPEND EXTRA_LIBS X-Test )
-    list ( APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/X-Test" )
-endif ( )
+add_library(${PROJECT_NAME} X-Test.hpp)
 
-target_link_libraries ( XTest PUBLIC ${EXTRA_LIBS} )
-
-target_include_directories (
-    XTest PUBLIC
-    "${PROJECT_SOURCE_DIR}/X-Test"
-    ${EXTRA_INCLUDES}
+target_include_directories( ${PROJECT_NAME}
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    PRIVATE src
 )
+
+set_target_properties(
+    ${PROJECT_NAME} PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+)
+
+install(
+    TARGETS ${PROJECT_NAME} EXPORT X_Tets
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+
+export(TARGETS ${PROJECT_NAME} FILE X-TestConfig.cmake)
