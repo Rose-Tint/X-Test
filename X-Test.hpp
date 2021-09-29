@@ -7,6 +7,10 @@
 #define TEST_CLASS(name) class name##Tests final : private xtst::TestBase
 #endif
 
+#ifndef TEST_CLASS_INIT
+#define TEST_CLASS_INIT ;bool run() const override final;using TestBase::TestBase;
+#endif
+
 #ifndef ADD_TEST_INST
 #define ADD_TEST_INST(cls) cls##Tests _test_##cls = cls##Tests();
 #endif
