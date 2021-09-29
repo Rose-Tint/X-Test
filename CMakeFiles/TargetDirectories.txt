@@ -1,4 +1,0 @@
-C:/Users/Owner/Documents/VSCode/X-Test/CMakeFiles/XTest.dir
-C:/Users/Owner/Documents/VSCode/X-Test/CMakeFiles/INSTALL.dir
-C:/Users/Owner/Documents/VSCode/X-Test/CMakeFiles/ALL_BUILD.dir
-C:/Users/Owner/Documents/VSCode/X-Test/CMakeFiles/ZERO_CHECK.dir

@@ -1,14 +1,15 @@
 #ifndef X_TEST_TESTBASE_HPP
 #define X_TEST_TESTBASE_HPP
 
-#include "fwd_dcl.hpp"
+#include "stl_includes.hpp"
 
 
 namespace xtst
 {
+    typedef ::std::streambuf* buffer_t;
     class TestBase
     {
-        static uint idt;
+        static unsigned int idt;
         static std::vector<buffer_t> bstack;
         static std::vector<TestBase*> tests;
 

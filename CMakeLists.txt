@@ -1,32 +1,48 @@
-cmake_minimum_required ( VERSION 3.10 )
+cmake_minimum_required(VERSION 3.10)
+project(X-Test LANGUAGES CXX VERSION 1.0.0 DESCRIPTION "X-Test: Logger for C++")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project ( XTest LANGUAGES CXX VERSION 1.0 )
-
-add_definitions(-std=c++17)
-
-set ( CMAKE_CXX_STANDARD 17 )
-set ( CMAKE_CXX_STANDARD_REQUIRED True )
-
-add_library(${PROJECT_NAME} X-Test.hpp)
-
-target_include_directories( ${PROJECT_NAME}
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    PRIVATE src
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/errors.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/format.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/handler.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/logger.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/stl_includes.hpp
+    DESTINATION include ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-set_target_properties(
-    ${PROJECT_NAME} PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION 1
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+
+message(STATUS "X-Test: Building Library")
+add_library(X-Test SHARED X-Test.hpp)
+set_target_properties(X-Test PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(X-Test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc")
+
+install(TARGETS X-Test
+    EXPORT X-TestTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
 )
 
-install(
-    TARGETS ${PROJECT_NAME} EXPORT X_Tets
-    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+install(EXPORT X-TestTargets
+    FILE X-TestTargets.cmake
+    NAMESPACE xtst::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/X-Test
 )
 
-install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+include(CMakePackageConfigHelpers)
 
-export(TARGETS ${PROJECT_NAME} FILE X-TestConfig.cmake)
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/X-TestConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/X-Test.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/X-Test
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/X-TestConfig.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/X-Test
+)

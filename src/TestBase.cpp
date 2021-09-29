@@ -8,7 +8,7 @@ namespace xtst
         return left == right;
     }
 
-    uint TestBase::idt = 0;
+    unsigned int TestBase::idt = 0;
 
     std::vector<buffer_t> TestBase::bstack { };
 
