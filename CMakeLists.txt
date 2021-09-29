@@ -7,11 +7,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
 message(STATUS "X-Test: Building Library")
-add_library(X-Test SHARED)
+add_library(X-Test SHARED "${CMAKE_CURRENT_SOURCE_DIR}/inc")
 set_target_properties(X-Test PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(X-Test PROPERTIES PUBLIC_HEADER X-Test.hpp)
+set_target_properties(X-Test PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/X-Test.hpp")
 target_include_directories(X-Test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc")
-target_sources(X-Test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/TestBase.cpp")
+# target_sources(X-Test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/TestBase.cpp")
 
 install(TARGETS X-Test
     EXPORT X-TestTargets
@@ -19,6 +19,7 @@ install(TARGETS X-Test
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
+    PUBLIC_HEADER DESTINATION include
 )
 
 install(EXPORT X-TestTargets
@@ -30,8 +31,8 @@ install(EXPORT X-TestTargets
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/X-TestConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/X-Test.cmake"
+    ${CMAKE_CURRENT_SOURCE_DIR}/X-TestConfig.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/X-TestConfig.cmake"
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/X-Test
 )
 
