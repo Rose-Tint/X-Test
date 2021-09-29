@@ -1,0 +1,14 @@
+set(X-Test_VERSION ${PROJECT_VERSION})
+
+@PACKAGE_INIT@
+
+set_and_check(X-Test_INCLUDE_DIR "@PACKAGE_INCLUDE_DIR@")
+set_and_check(X-Test_SOURCE_DIR "@PACKAGE_SOURCE_DIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/X-TestTargets.cmake")
+
+message(STATUS "X-TestConfig: version: ${X-Test_VERSION}")
+# message(STATUS "X-TestConfig: inc loc: ${X-Test_INCLUDE_DIR}")
+# message(STATUS "X-TestConfig: src loc: ${X-Test_SOURCE_DIR}")
+
+check_required_components(X-Test)
