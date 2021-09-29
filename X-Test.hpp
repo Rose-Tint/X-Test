@@ -12,11 +12,11 @@
 #endif
 
 #ifndef DECLARE_TEST
-#define DECLARE_TEST(func, exp_t, ...) static bool test_##func(const exp_t &, __VA_OPT__);
+#define DECLARE_TEST(func, exp_t, ...) static bool test_##func(const exp_t &, __VA_ARGS__);
 #endif
 
 #ifndef DEFINE_TEST
-#define DEFINE_TEST(cls, func, exp_t, ...) bool cls##Tests::test_##func_name(const exp_t &, __VA_OPT__)
+#define DEFINE_TEST(cls, func, exp_t, ...) bool cls##Tests::test_##func_name(const exp_t &, __VA_ARGS__)
 #endif
 
 #endif
