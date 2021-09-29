@@ -27,4 +27,8 @@
 #define DEFINE_RUN(cls) bool cls##Tests::run() const
 #endif
 
+#ifndef TEST
+#define TEST(cls, func, exp, ...) cls##Tests::test_##func (exp, __VA_ARGS__)
+#endif
+
 #endif
