@@ -16,7 +16,7 @@ namespace xtst
         protected:
         TestBase() { tests.push_back(this); }
 
-        virtual bool run() = 0;
+        virtual bool run() const = 0;
 
         template<typename ...Args>
         static void print(std::string, Args...);
