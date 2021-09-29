@@ -28,7 +28,7 @@
 #endif
 
 #ifndef TEST
-#define TEST(cls, func, exp, ...) cls##Tests::test_##func (exp, __VA_ARGS__)
+#define TEST(cls, func) cls##Tests::test_##func
 #endif
 
 #endif
