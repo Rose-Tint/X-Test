@@ -1,34 +1,27 @@
 #ifndef X_TEST_HPP
 #define X_TEST_HPP
 
-#include "TestBase.hpp"
+#include "inc/macrodef.hpp"
+#include "inc/ansi.hpp"
+#include "inc/expectations.hpp"
+#include "inc/Formatter.hpp"
+#include "inc/FunctionTraits.hpp"
+#include "inc/ArgGenerator.hpp"
+#include "inc/TypeTraits.hpp"
+#include "inc/UnitTest.hpp"
 
-#ifndef TEST_CLASS
-#define TEST_CLASS(name) class name##Tests final : private xtst::TestBase
+#ifndef AUTO_TEST
+#  define AUTO_TEST(Return, name, Args...)\
+    Return name(Args);\
+    using name##_traits = xtst::TestTraits<Return(*)(Args), name>;\
+    using name##_test = xtst::UnitTest< name##_traits >;\
+    Return name(Args)
 #endif
 
-#ifndef TEST_CLASS_INIT
-#define TEST_CLASS_INIT ;bool run() const override final;using TestBase::TestBase;
-#endif
 
-#ifndef ADD_TEST_INST
-#define ADD_TEST_INST(cls) cls##Tests _test_##cls = cls##Tests();
-#endif
-
-#ifndef DECLARE_TEST
-#define DECLARE_TEST(func, exp_t, ...) static bool test_##func(const exp_t &, __VA_ARGS__);
-#endif
-
-#ifndef DEFINE_TEST
-#define DEFINE_TEST(cls, func, exp_t, ...) bool cls##Tests::test_##func_name(const exp_t &, __VA_ARGS__)
-#endif
-
-#ifndef DEFINE_RUN
-#define DEFINE_RUN(cls) bool cls##Tests::run() const
-#endif
-
-#ifndef TEST
-#define TEST(cls, func) cls##Tests::test_##func
-#endif
+#ifndef ADD_TEST
+# define ADD_TEST(test)\
+    using test##_traits = xtst::TestTraits<decltype(&test, name)>;\
+    using test##_test = xtst::UnitTest<  >
 
 #endif
