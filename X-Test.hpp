@@ -1,14 +1,14 @@
 #ifndef X_TEST_HPP
 #define X_TEST_HPP
 
-#include "inc/macrodef.hpp"
-#include "inc/ansi.hpp"
-#include "inc/expectations.hpp"
-#include "inc/Formatter.hpp"
-#include "inc/FunctionTraits.hpp"
-#include "inc/ArgGenerator.hpp"
-#include "inc/TypeTraits.hpp"
-#include "inc/UnitTest.hpp"
+#include "include/macrodef.hpp"
+#include "include/ansi.hpp"
+#include "include/expectations.hpp"
+#include "include/Formatter.hpp"
+#include "include/FunctionTraits.hpp"
+#include "include/ArgGenerator.hpp"
+#include "include/TypeTraits.hpp"
+#include "include/UnitTest.hpp"
 
 #ifndef AUTO_TEST
 #  define AUTO_TEST(Return, name, Args...)\

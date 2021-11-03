@@ -8,11 +8,11 @@
 namespace xtst
 {
     template < class > class CaseArgTuple;
+
     namespace dtl
     {
-        // ONLY for use as the base for specialized FunctionTraits
-        inline constexpr void pseudo_function( void ) { return; }
     }
+
     template < class S, S, class...Errors > struct FunctionTraits final { };
     template < class R, class...ArgTypes, R(*Func)(ArgTypes...), class...Errors >
     struct FunctionTraits<R(*)(ArgTypes...), Func, Errors...>
@@ -31,18 +31,20 @@ namespace xtst
         static constexpr return_type Apply(arg_types);
     };
 
-    // specialized FunctionTraits should inherit from this.
-    using BaseFuncTraits = FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>;
-
     namespace dtl
     {
+        // ONLY for use as the base for specialized FunctionTraits
+        inline constexpr void pseudo_function( void ) { return; }
+
         enum TraitAssertion : bool { IsTrait, IsNotTrait };
         template < class Tr, TraitAssertion ta > struct AssertTraitsHelper { };
         template < class Tr > struct AssertTraitsHelper<Tr, IsTrait >
         { typedef Tr traits; };
     }
 
-    // returns whether a given traits class is valid and complete
+    // specialized FunctionTraits should inherit from this.
+    using BaseFuncTraits = FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>;
+
     template < class Tr > constexpr dtl::TraitAssertion assert_traits( void );
 
     // acts at the given class if the class is a valid and complete FunctionTraits class

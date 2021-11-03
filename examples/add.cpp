@@ -11,12 +11,12 @@ int add( int a, int b )
 
 #endif
 
-///// test.cpp ///// 
+///// test.hpp ///// 
 
 #include "../X-Test.hpp"
 
 using add_traits = FunctionTraits<decltype(&add), add>;
-using test_add = UnitTest<add_traits>;
+using test_add = UnitTest<add_traits>; 
 
 test_add::Trust( 4, 3, 1 ); // add tests individually
 test_add::Trust({
@@ -27,8 +27,11 @@ test_add::Trust({
 }); // or using initializer lists
 // no Doubts because add is nothrow
 
+///// main.cpp /////
+#ifdef X_TEST_RUN_TEST_ADD
 int main()
 {
     test_add::RunTests();
     return 0;
 }
+#endif
