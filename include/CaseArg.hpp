@@ -1,5 +1,5 @@
-#ifndef X_TEST_GIVENVALUE_HPP
-#define X_TEST_GIVENVALUE_HPP
+#ifndef X_TEST_CASEARG_HPP
+#define X_TEST_CASEARG_HPP
 
 #include <cstddef>
 
@@ -16,11 +16,11 @@ namespace xtst
         typedef ArgGenerator<I, decltype(&Func), Func> gen_type;
         typedef typename gen_type::value_type value_type;
 
-        constexpr CaseArg( void ) noexcept(gen_type());
-        CaseArg( value_type&& );
-        CaseArg( gen_type&& );
+        constexpr CaseArg( void ) noexcept(gen_type()) : gen(gen_type()) { }
+        constexpr CaseArg( value_type&& val ) : arg(val), method(Fwd) { }
+        constexpr CaseArg( gen_type&& g ) : gen(g), method(Gen) { }
 
-        constexpr value_type generate( void ) const &;
+        constexpr value_type generate( void ) const & { return (method == Gen) ? gen() : arg; }
 
       private:
         union
@@ -41,10 +41,16 @@ namespace xtst
     template < class Rtn, class...ArgTypes, Rtn(*Fn)(ArgTypes...) >
     struct CaseArgTuple<Rtn(*)(ArgTypes...), Fn>
     {
+      private:
+        static constexpr auto AllArgIndices = IndexSeq<sizeof...(ArgTypes)>{};
+        template < class > struct MakeCaseArgTuple;
+        template < std::size_t...I > struct MakeCaseArgTuple<IntegerSeq<I...>>
+        { typedef std::tuple<CaseArg<I, Rtn(*)(ArgTypes...), Fn>...> type; };
+
+      public:
         template < std::size_t I >
         using case_arg_type = CaseArg<I, Rtn(*)(ArgTypes...), Fn>;
-        typedef IndexSeq<sizeof...(ArgTypes)> Size;
-        typedef std::tuple<CaseArg<>> type;
+        typedef typename MakeCaseArgTuple<IndexSeq<sizeof...(ArgTypes)>>::type type;
     };
 }
 

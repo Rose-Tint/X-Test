@@ -64,8 +64,7 @@ namespace xtst
         no_sup_or_sub  = 75,
     };
 
-    struct AnsiList
-    { std::set<AnsiOption> options; };
+    typedef std::set<AnsiOption> AnsiList;
 
     AnsiList operator , ( const AnsiList&, AnsiOption );      // same as &
     AnsiList operator , ( AnsiOption, AnsiOption );           // same as &
@@ -77,7 +76,7 @@ namespace xtst
     string_t operator "" _ansi( const char* );
     string_t ansi( const char* );
     string_t ansi( AnsiOption );
-    void ansi_wrap( string_t& );
+    void ansi( string_t& );
     void ansi( string_t&, AnsiOption );
     std::ostream& operator << ( std::ostream&, AnsiOption );
 }
