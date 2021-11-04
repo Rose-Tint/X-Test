@@ -9,11 +9,10 @@ namespace xtst
 {
     template < class > class CaseArgTuple;
 
-    namespace dtl
-    {
-    }
+    template < class T >
+    using generator_f = T(*)(void);
 
-    template < class S, S, class...Errors > struct FunctionTraits final { };
+    template < class S, S, class...Errors > struct FunctionTraits { };
     template < class R, class...ArgTypes, R(*Func)(ArgTypes...), class...Errors >
     struct FunctionTraits<R(*)(ArgTypes...), Func, Errors...>
     {
@@ -28,28 +27,33 @@ namespace xtst
         static constexpr signature_f function = Func;
         static constexpr std::size_t argc = sizeof...( ArgTypes );
 
-        static constexpr return_type Apply(arg_types);
+        static constexpr return_type Apply( const arg_types& args ) { return apply(function, args); }
     };
 
     namespace dtl
     {
         // ONLY for use as the base for specialized FunctionTraits
         inline constexpr void pseudo_function( void ) { return; }
-
-        enum TraitAssertion : bool { IsTrait, IsNotTrait };
-        template < class Tr, TraitAssertion ta > struct AssertTraitsHelper { };
-        template < class Tr > struct AssertTraitsHelper<Tr, IsTrait >
-        { typedef Tr traits; };
     }
 
-    // specialized FunctionTraits should inherit from this.
+    // specialized FunctionTraits should inherit from this. aliased as `BaseFuncTraits`.
+    struct FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>
+    {
+        typedef std::tuple<> error_types;
+        typedef void return_type;
+        typedef CaseArgTuple<> input_types;
+        typedef std::tuple<> arg_types;
+        typedef void(*signature_f)( void );
+
+        FunctionTraits() = delete;
+
+        static constexpr void(*)(void) function = dtl::pseudo_function;
+        static constexpr std::size_t argc = 0;
+
+        static constexpr void Apply(arg_types) { return apply(function, args); }
+    };
+
     using BaseFuncTraits = FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>;
-
-    template < class Tr > constexpr dtl::TraitAssertion assert_traits( void );
-
-    // acts at the given class if the class is a valid and complete FunctionTraits class
-    template < class Tr >
-    using AssertTraits = typename dtl::AssertTraitsHelper<Tr, assert_traits<Tr>()>::traits;
 }
 
  

@@ -15,15 +15,12 @@ using namespace xtst;
 template<class Tr>
 std::string Formatter<Tr>::Format( bool test_passed, std::shared_ptr<return_type> exp, const return_type& rtn, const arg_types& args )
 {
-    std::size_t pos = 0;
-    std::size_t offset = 0;
-    std::string fstr = format; // formatted string
-    std::string param;
-    std::string arg;
+    std::size_t pos = 0, offset = 0;
+    std::string fstr = format, param, arg;
     std::smatch match;
     auto _args = get_args();
     auto fmtargs = _args.first;
-    auto args_arr = _args.first;
+    auto args_arr = _args.second;
     std::regex_search(format, match, pattern);
 
     for (int i = 0; i < match.size(); i++)
