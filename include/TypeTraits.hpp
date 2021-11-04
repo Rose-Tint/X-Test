@@ -11,11 +11,6 @@ namespace xtst
 
     namespace dtl
     {
-        template < std::size_t I, class Tuple > struct TypeAtHelper;
-        template < std::size_t I, class...Types >
-        struct TypeAtHelper<I, std::tuple<Types...>>
-        { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; };
-
         template < class T, class > struct in_tuple_helper;
         template < class T, class...Types > struct in_tuple_helper<T, std::tuple<Types...>>
         { static constexpr bool value = ::xtst::typetraits::in_param_pack<T, Types...>(); }
@@ -23,35 +18,44 @@ namespace xtst
 
     inline namespace typetraits
     {
-        // convenience
-        template < class T >
-        using Decay = typename std::decay<T>::type;
-        template < class T >
-        using RemoveRef = typename std::remove_reference<T>::type;
-        template < bool Cond >
-        using EnableIf = typename std::enable_if<Cond, bool>::type;
-        template < class T1, class T2 >
-        using AreSame = std::is_same<T1, T2>;
-        template < class T1, class T2 >
-        using SameNaked = AreSame<Decay<T1>, Decay<T2>>;
-        template < bool C, class T, class F >
-        struct Condi
-
         // transformers
+        template < bool, class = bool > struct EnableIf { };
+        template < class Cls = bool >
+        struct EnableIf<true, Cls>
+        { typedef Cls type; };
+        template < bool B, class C = bool >
+        using EnableIf_t = typename EnableIf<B, C>::type;
+
+        template < std::size_t I, class...Types > struct TypeAt
+        { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; }
+        // so that a tuple can be passed instead of a pack
         template < std::size_t I, class...Types >
-        using TypeAt = typename dtl::TypeAtHelper<I, std::tuple<Types...>>::type;
+        struct TypeAt<I, std::tuple<Types...>>
+        { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; };
+        template < std::size_t I, class...Types > struct TypeAt
+        using TypeAt_t = typename TypeAt<I, Types...>::type;
+
+        template < template < class > class, class > struct TransformTuple;
+        template < template<class> class Transformer, class...Types >
+        struct TransformTuple<Transformer, std::tuple<Types...>>
+        { typedef std::tuple<typename Transformer<Types>::type...> type; };
+        template < template<class> class Transformer, class Tuple >
+        using TransformTuple_t = typename TransformTuple<Transformer, Tuple>::type;
+
 
         // traits
-        template < class To, class...Froms >
-        constexpr bool are_convertible( void );
-        template < class T, class...Ts >
-        constexpr bool in_param_pack( void );
-        template < class T, class Tuple >
-        constexpr bool in_tuple( void );
+        template < class T, class...Ts > struct InParamPack
+            : Conditional_t<std::true_type, std::false_type, And<AreSame<T, Ts>...>> { };
+
+        template < class, class > struct AreSame : std::false_type { };
+        template < class T > struct AreSame<T, T> : std::true_type { };
+
+        template < class T1, class T2 > struct AreSameNaked
+            : AreSame<typename std::decay<T1>::type, typename std::decay<T2>::type> { };
 
         // enablers
-        template < class To, class...Froms >
-        using EnableIfCvt = EnableIf<are_convertible<To, Froms...>()>;
+        template < class To, class From >
+        using EnableIfAllCvt = EnableIf_t<std::convertible<To, From>>()>;
         template < class...Args >
         using EnableIfStrCvt = EnableIfCvt<std::string, Args...>;
         template < class F, class...A >
@@ -72,6 +76,16 @@ namespace xtst
         { static constexpr bool value = Curr::value || OrTraits<Next...>::value; };
         template < class Curr > struct OrTraits<Curr> // base case
         { static constexpr bool value = Curr::value; };
+
+        // miscellaneous
+        template < std::size_t I, class T > struct IndexedType
+        {
+            typedef T type;
+            static constexpr std::size_t index = I;
+        };
+        template < std::size_t I, class T >
+        using IndexedType_t = typename IndexedType<I, T>::type;
+        using IndexedType_i = IndexedType<I, T>::index;
     }
 }
 

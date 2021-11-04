@@ -21,12 +21,16 @@ namespace xtst
 
     template < class Traits > class UnitTest : public AssertTraits<Traits>
     {
+      public:
         using typename Traits::return_type;
+        using typename Traits::arg_types;
         using typename Traits::input_types;
         typedef std::pair<return_type, input_types> trusted_t;
 
         UnitTest() = delete;
 
+        template < std::size_t...I >
+        static void SetArgGens( generator_f<TypeAt<I, arg_types>>... );
         static void Trust( return_type, input_types );
         static void Trust( ilist<trusted_t> );
         static void Doubt( input_types );
@@ -35,7 +39,6 @@ namespace xtst
         static std::vector<CaseResult> Results( void );
 
       private:
-        using typename Traits::arg_types;
         using typename Traits::error_types;
         typedef std::pair<std::shared_ptr<return_type>, ExpResult> expectation;
         typedef Formatter<Traits> format_type;
@@ -46,6 +49,7 @@ namespace xtst
         static constexpr arg_types gen_from_input( input_types );
         static constexpr bool is_exp_error( void );
 
+        static TransformTuple_t<generator_f, arg_types> gen_args;
         static std::vector<CaseResult> results;
         static std::vector<trusted_t> cases;
         static const format_type formatter = format_type();

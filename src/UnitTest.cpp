@@ -1,9 +1,17 @@
 #include "../include/UnitTest.hpp"
-#include "../include/expectations.hpp"
+#include "../include/CaseArg.hpp"
 
 #include <iostream>
 
 using namespace xtst;
+
+
+template < class Tr >
+template < std::size_t...I >
+void UnitTest<Tr>::SetArgGens( generator_f<TypeAt<I, arg_types>>... gens )
+{
+    input_types
+}
 
 
 /**

@@ -2,33 +2,43 @@
 #define X_TEST_CASEARG_HPP
 
 #include <cstddef>
+#include <cstdint>
+
 
 
 namespace xtst
 {
-    template < std::size_t I, class Fn, Fn fn > class ArgGenerator;
+    inline namespace utl
+    {
+        template < std::size_t > struct IndexSeq;
+        template < std::size_t > struct IntegerSeq;
+    }
 
-    template < std::size_t, class Sig, Sig Func > struct CaseArg;
-    template < std::size_t I, class Rtn, class...ArgTypes, Rtn(*Func)(ArgTypes...) >
-    struct CaseArg<I, Rtn(*)(ArgTypes...), Func>
+
+    template < class T >
+    using generator_f = T(*)( void );
+
+    template < template < class > class, class > struct GenTuple;
+    template < template < class > class Transform, class...Types >
+    struct GenTuple<Transform, std::tuple<Types...>>
+    {
+        typedef std::tuple<typename Transform<Types>::type...> type;
+    }
+
+    template < class T, std::size_t I = SIZE_MAX > struct CaseArg
     {
       public:
-        typedef ArgGenerator<I, decltype(&Func), Func> gen_type;
-        typedef typename gen_type::value_type value_type;
+        typedef generator_f<T> gen_type;
+        typedef T value_type;
 
-        constexpr CaseArg( void ) noexcept(gen_type()) : gen(gen_type()) { }
-        constexpr CaseArg( value_type&& val ) : arg(val), method(Fwd) { }
-        constexpr CaseArg( gen_type&& g ) : gen(g), method(Gen) { }
+        constexpr CaseArg( const value_type& val ) : arg(val), method(Fwd) { }
+        constexpr CaseArg( gen_type g ) : gen(g), method(Gen) { }
 
         constexpr value_type generate( void ) const & { return (method == Gen) ? gen() : arg; }
 
       private:
-        union
-        {
-            gen_type gen;
-            value_type arg;
-        };
         enum : bool { Gen, Fwd } method;
+        union { gen_type gen; value_type arg; };
     };
 
     enum struct ExpResult : bool
@@ -45,11 +55,11 @@ namespace xtst
         static constexpr auto AllArgIndices = IndexSeq<sizeof...(ArgTypes)>{};
         template < class > struct MakeCaseArgTuple;
         template < std::size_t...I > struct MakeCaseArgTuple<IntegerSeq<I...>>
-        { typedef std::tuple<CaseArg<I, Rtn(*)(ArgTypes...), Fn>...> type; };
+        { typedef std::tuple<CaseArg<ArgTypes, I>...> type; };
 
       public:
         template < std::size_t I >
-        using case_arg_type = CaseArg<I, Rtn(*)(ArgTypes...), Fn>;
+        using case_arg_type = CaseArg<CaseArg<ArgTypes, I>...>;
         typedef typename MakeCaseArgTuple<IndexSeq<sizeof...(ArgTypes)>>::type type;
     };
 }

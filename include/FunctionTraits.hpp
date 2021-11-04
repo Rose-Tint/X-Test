@@ -9,11 +9,10 @@ namespace xtst
 {
     template < class > class CaseArgTuple;
 
-    namespace dtl
-    {
-    }
+    template < class T >
+    using generator_f = T(*)(void);
 
-    template < class S, S, class...Errors > struct FunctionTraits final { };
+    template < class S, S, class...Errors > struct FunctionTraits { };
     template < class R, class...ArgTypes, R(*Func)(ArgTypes...), class...Errors >
     struct FunctionTraits<R(*)(ArgTypes...), Func, Errors...>
     {
@@ -42,8 +41,14 @@ namespace xtst
         { typedef Tr traits; };
     }
 
-    // specialized FunctionTraits should inherit from this.
-    using BaseFuncTraits = FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>;
+    // specialized FunctionTraits should inherit from this. aliased as `BaseFuncTraits`
+    struct FunctionTraits<decltype(&dtl::pseudo_function), dtl::pseudo_function>
+    {
+        static constexpr void(*)(void) function = dtl::pseudo_function;
+        static constexpr std::size_t argc = 0;
+
+        static constexpr void Apply(arg_types);
+    }
 
     template < class Tr > constexpr dtl::TraitAssertion assert_traits( void );
 
