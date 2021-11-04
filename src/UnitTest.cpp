@@ -6,11 +6,29 @@
 using namespace xtst;
 
 
-template < class Tr >
-template < std::size_t...I >
-void UnitTest<Tr>::SetArgGens( generator_f<TypeAt<I, arg_types>>... gens )
+/**
+* sets an argument generator for a given index
+*
+* @temp-param I  index of the argument generator to set
+* @temp-param T  type of the argument and the given index
+* @param gen  generator to be put at index I
+*/
+template < class Traits >
+template < std::size_t I, class T >
+constexpr void UnitTest<Traits>::SetArgGen( generator_f<T> gen )
 {
-    input_types
+    std::get<I>(arg_gens) = gen;
+}
+
+/**
+* sets argument generators
+*
+* @param gens  pointers to functions that act as argument generators
+*/
+template < class Traits >
+constexpr void UnitTest<Traits>::SetArgGens( gen_types gens )
+{
+    arg_gens = gens;
 }
 
 
@@ -20,8 +38,8 @@ void UnitTest<Tr>::SetArgGens( generator_f<TypeAt<I, arg_types>>... gens )
 * @param rtn  expected return value
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
-template < class Tr >
-void UnitTest<Tr>::Trust( return_type rtn, input_types input )
+template < class Traits >
+void UnitTest<Traits>::Trust( return_type rtn, input_types input )
 {
     cases.emplace_back({ std::move(rtn), ExpResult::Return }, std::move(input));
 }
@@ -31,8 +49,8 @@ void UnitTest<Tr>::Trust( return_type rtn, input_types input )
 *
 * @param inputs  an initializer list of pairs of the expected return value and a tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
-template < class Tr >
-void UnitTest<Tr>::Trust( ilist<trusted_t> inputs )
+template < class Traits >
+void UnitTest<Traits>::Trust( ilist<trusted_t> inputs )
 {
     for (trusted_t icase : inputs)
         cases.emplace_back({ icase.first, ExpResult::Return }, icase.second);
@@ -43,8 +61,8 @@ void UnitTest<Tr>::Trust( ilist<trusted_t> inputs )
 *
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
-template < class Tr >
-void UnitTest<Tr>::Doubt( input_types input )
+template < class Traits >
+void UnitTest<Traits>::Doubt( input_types input )
 {
     cases.emplace_back({ nullptr, ExpResult::Error }, std::move(input));
 }
@@ -54,8 +72,8 @@ void UnitTest<Tr>::Doubt( input_types input )
 *
 * @param inputs  an initializer list of tuples of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
-template < class Tr >
-void UnitTest<Tr>::Doubt( ilist<input_types> input )
+template < class Traits >
+void UnitTest<Traits>::Doubt( ilist<input_types> input )
 {
     for (const input_types& iargs : input)
         cases.emplace_back({ iargs.first, ExpResult::Return }, iargs.second);
@@ -64,8 +82,8 @@ void UnitTest<Tr>::Doubt( ilist<input_types> input )
 /**
 * runs registered tests and prints the formatted results to the console.
 */
-template < class Tr >
-void UnitTest<Tr>::RunTests( void )
+template < class Traits >
+void UnitTest<Traits>::RunTests( void )
 {
     bool pass;
     std::string fstring;

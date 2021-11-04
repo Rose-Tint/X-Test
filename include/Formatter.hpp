@@ -18,7 +18,7 @@ namespace xtst
     typedef std::unordered_map<std::string, std::string> string_map_t;
 
     template< class Tr >
-    class Formatter final : public AssertTraits<Tr>
+    class Formatter final
     {
         using typename Tr::return_type;
         using typename Tr::arg_types;
