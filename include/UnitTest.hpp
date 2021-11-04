@@ -6,7 +6,6 @@
 #include <vector>
 #include <memory>
 
-#include "./FunctionTraits.hpp"
 #include "./TypeTraits.hpp"
 
 
@@ -19,7 +18,7 @@ namespace xtst
     enum struct CaseResult : bool;
     enum struct ExpResult : bool;
 
-    template < class Traits > class UnitTest : public AssertTraits<Traits>
+    template < class Traits > class UnitTest
     {
       public:
         using typename Traits::return_type;
