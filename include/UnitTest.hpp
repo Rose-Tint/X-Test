@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "./TypeTraits.hpp"
+#include "./generator_f.hpp"
 
 
 namespace xtst
@@ -19,9 +20,6 @@ namespace xtst
     enum struct CaseResult : bool;
     enum struct ExpResult : bool;
 
-    template < class T >
-    using generator_f = T(*)( void );
-
     template < class Traits > class UnitTest
     {
       public:
@@ -33,8 +31,9 @@ namespace xtst
         UnitTest() = delete;
 
         template < std::size_t, class T >
-        constexpr static void SetArgGen( generator_f<T> );
-        constexpr static void SetArgGens( TransformTuple_t<generator_f, arg_types> );
+        constexpr static void SetArgGen( generator_f<T> )
+            { std::get<I>(arg_gens) = gen; }
+        constexpr static void SetArgGens( ; );
         static void Trust( return_type, input_types );
         static void Trust( ilist<trusted_t> );
         static void Doubt( input_types );
@@ -49,6 +48,9 @@ namespace xtst
         typedef std::pair<expectation, input_types> case_type;
         typedef dtl::InheritAll<error_types> AllErrors;
         typedef TransformTuple_t<generator_f, arg_types> gen_types;
+        // for use in 
+        template < class Fn, Fn f, class Def, Def, d >
+        using SetIfNotNullptr = ConditionalValue<IsNullFunction<Fn, f>, Def, d, Fn, f>;
 
         static constexpr return_type run_case( arg_types );
         static constexpr arg_types gen_from_input( input_types );

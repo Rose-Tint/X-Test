@@ -17,7 +17,7 @@ template < class Traits >
 template < std::size_t I, class T >
 constexpr void UnitTest<Traits>::SetArgGen( generator_f<T> gen )
 {
-    std::get<I>(arg_gens) = gen;
+    
 }
 
 /**
@@ -28,7 +28,7 @@ constexpr void UnitTest<Traits>::SetArgGen( generator_f<T> gen )
 template < class Traits >
 constexpr void UnitTest<Traits>::SetArgGens( gen_types gens )
 {
-    arg_gens = gens;
+    arg_gens = TransformTuple_t<EnableIfNotNullptr, class Tuple>
 }
 
 
@@ -87,12 +87,15 @@ void UnitTest<Traits>::RunTests( void )
 {
     bool pass;
     std::string fstring;
+    // pointer to the return value, or nullptr if there was an error
     std::unique_ptr<return_type> rtn_ptr = nullptr;
+    // pointer to the expexted return value, or nullptr for error
     std::shared_ptr<return_type> result = nullptr;
-    for (auto _case : cases)
+
+    for (auto test_case : cases)
     {
-        const arg_types& args = gen_from_input(_case.second);
-        result = _case.first.first;
+        const arg_types& args = gen_from_input(test_case.second);
+        result = test_case.first.first;
         try
         {
             rtn_ptr = std::make_unique(Apply(args));
@@ -101,10 +104,15 @@ void UnitTest<Traits>::RunTests( void )
         {
             rtn_ptr = nullptr;
         }
+
         if (rtn_ptr == nullptr)
             pass = (result == nullptr);
+        // {uses short circuiting to prevent seg-faults}
+        // if both the return pointer and expected result pointer can
+        // be dereferenced, test their equality
         else pass = !(result == nullptr && (*rtn_ptr != *result));
-        fstring = formatter.format(pass, result, *rtn_ptr, args);
+
+        fstring = formatter.format(pass, result, rtn_ptr, args);
         std::cout << fstring << std::endl;
     }
 }

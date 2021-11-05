@@ -19,13 +19,16 @@ namespace xtst
     inline namespace typetraits
     {
         template < class T, T > struct IntegralConstant;
-        template < class Cond, class T > struct EnableIf;
+        template < bool Cond, class T = bool > struct EnableIf;
         template < class T, class Tuple > struct Contains;
         template < bool Cond, class If, class Else > struct Conditional;
+        template < bool Cond, class If, If if_v, class Else, Else else_v > struct CondValue;
         template < class T1, class T2 > struct Same;
         template < class...Traits > struct TraitsAnd;
         template < class...Traits > struct TraitsOr;
         template < std::size_t Index, class...Types > struct TypeAt;
+        template < template < class > class, class > struct TransformTuple;
+        template < template < class > class, class > struct ZipTuples;
         template < class Fn, Fn > struct IsNullFunction;
 
         using TrueType = IntegralConstant<bool, true>;
@@ -40,12 +43,12 @@ namespace xtst
             constexpr operator value_type() const noexcept { return value; }
         };
 
-        template < class, class >
+        template < bool, class >
         struct EnableIf : FalseType { };
         template < class T >
-        struct EnableIf<T, T> : TrueType { };
-        template < class T1, class T2 >
-        using EnableIf_t = typename EnableIf<T1, T2>::type;
+        struct EnableIf<true, T> : TrueType { using type = T; };
+        template < bool Cond, class T = bool >
+        using EnableIf_t = typename EnableIf<Cond, T>::type;
 
         template < class T, class...Types >
         struct Contains<T, std::tuple<Types...>> : TraitsOr<Same<T, Types>...> { };
@@ -65,7 +68,6 @@ namespace xtst
         template < std::size_t I, class...Types > struct TypeAt
         using TypeAt_t = typename TypeAt<I, Types...>::type;
 
-        template < template < class > class, class > struct TransformTuple;
         template < template<class> class Transformer, class...Types >
         struct TransformTuple<Transformer, std::tuple<Types...>>
         { typedef std::tuple<typename Transformer<Types>::type...> type; };

@@ -9,9 +9,6 @@ namespace xtst
 {
     template < class > class CaseArgTuple;
 
-    template < class T >
-    using generator_f = T(*)(void);
-
     template < class S, S, class...Errors > struct FunctionTraits { };
     template < class R, class...ArgTypes, R(*Func)(ArgTypes...), class...Errors >
     struct FunctionTraits<R(*)(ArgTypes...), Func, Errors...>

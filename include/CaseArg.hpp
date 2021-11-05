@@ -18,13 +18,6 @@ namespace xtst
     template < class T >
     using generator_f = T(*)( void );
 
-    template < template < class > class, class > struct GenTuple;
-    template < template < class > class Transform, class...Types >
-    struct GenTuple<Transform, std::tuple<Types...>>
-    {
-        typedef std::tuple<typename Transform<Types>::type...> type;
-    }
-
     template < class T, std::size_t I = SIZE_MAX > struct CaseArg
     {
       public:

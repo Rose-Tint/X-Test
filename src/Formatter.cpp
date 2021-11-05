@@ -2,6 +2,7 @@
 #include "../include/utils.hpp"
 #include "../include/macrodef.hpp"
 #include <unordered_map>
+#include <sstream>
 
 using namespace xtst;
 
@@ -12,8 +13,11 @@ using namespace xtst;
 * @param args  arguments used in the tested case
 * @return  a formatted string
 */
-template<class Tr>
-std::string Formatter<Tr>::Format( bool test_passed, std::shared_ptr<return_type> exp, const return_type& rtn, const arg_types& args )
+template<class Traits>
+std::string Formatter<Traits>::Format( bool test_passed,
+                                       std::shared_ptr<return_type> exp,
+                                       const return_type* rtn,
+                                       const arg_types& args )
 {
     std::size_t pos = 0, offset = 0;
     std::string fstr = format, param, arg;
@@ -25,13 +29,21 @@ std::string Formatter<Tr>::Format( bool test_passed, std::shared_ptr<return_type
 
     for (int i = 0; i < match.size(); i++)
     {
-        pos = match.position(i);
+        pos = match.position(i) + offset;
         param = match.str(i);
         if (fmtargs.count(param) != 0)
         {
             arg = fmtargs.at(param);
-            fstr.replace(pos + offset - 2, param.size() + 3, arg);
+            // the `- 2` is `pos - 2` accounts for `${`,
+            // and the `- 3` in `param.size() - 3` accounts for all three chars (`${}`).
+            fstr.replace(pos - 2, param.size() + 3, arg);
             offset += param.size() - arg.size() + 3;
+            // the best way to explain the above line is through a visual example:
+            // the format is "foobar ${ex-param} quuxbaz", and'some-param' maps to "example argument"
+            // replace from          ^ to      ^ with
+            //                       example argument
+            // fstring will be offset by       ^    ^ (5), which is the difference between the
+            // size of the parameter (plus 3 to account for the `${}`), and the size of the arg
         }
     }
 }
@@ -39,74 +51,35 @@ std::string Formatter<Tr>::Format( bool test_passed, std::shared_ptr<return_type
 /**
 * @param rtn  return value of the tested case
 * @param args  arguments used in the tested case
-* @return  a pair consisting of a map with format arguments as keys and an array of string representations of args, or "unavailable" if the arg is not convertible to a string
+* @return  a pair consisting of a map with format args as keys,
+*     and an array of string values of args if possible, else "unavailable"
 */
-template < class Tr >
-std::pair<string_map_t, std::array<std::string, Tr::argc>> Formatter<Tr>::get_args(const return_type& rtn, const arg_types& args) const
+template < class Traits >
+fmt_args_t<Traits::argc> Formatter<Traits>::get_args(const return_type* rtn, const arg_types& args)
 {
-    std::string rtn_str = if_cvt(rtn, "unavailable");
-    std::string rtn_t_str = utl::type_name<Tr::return_type>();
+    std::string rtn_str = try_str_cvt(rtn);
+    std::string rtn_t_str = utl::type_name<Traits::return_type>();
     std::string sig_str = rtn_t_str+"(*)("+type_name_csl<arg_types>()+")";
-    auto arg_strs = utl::to_array_of(args, std::string("unavailable"));
+    auto arg_str_array = to_array_of(args, std::string("unavailable"));
     return{{
         {"return"     , rtn_str  },
         {"return-type", rtn_t_str},
         {"signature"  , sig_str  },
-    }, arg_strs };
+    }, arg_str_array };
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+* @param v_ptr  pointer to the value to convert to a string
+* @return  the given value converted to a string, or the address if the deduced type cannot be
+*     converted to a string, or "nullptr" if the pointer is `nullptr`
+*/
+template < class Traits >
+template < class T >
+std::string Formatter<Traits>::try_str_cvt( T* v_ptr )
 {
-    for (unsigned short i = 0; i < args.size(); i++)
-    {
-        set_arg(args.at(i), i);
-        fmtargs.insert({ info.name, fmt_arg(info) });
-    }
-    // set the rest of the args' values to DEFAULT_ARG_VALUE
-    for (unsigned short i = args.size(); i < args.size(); i++)
-        args.at(i).value = DEFAULT_ARG_VALUE;
-
-    while (sk.end < format.size())
-    {
-        sk.start = format.find("${", sk.end);
-        sk.end = format.find('}', sk.start);
-        param = fmt_param(format, result, seek);
-        if (param == "args")
-        {
-            result.erase(sk.start + sk.offset, sk.start - sk.end);
-            for (unsigned short i = 0; i < argc; i++)
-            {
-                sk.param = args.at(i).name = args.at(i);
-                result.insert(sk.start + sk.offset, fmtargs.at(sk.param));
-                sk.offset += sk.param.size();
-            }
-            continue;
-        }
-        else if (param == "result")
-        {
-            if (test_passed)
-                sk.param = ansi_format(PASS_MESSAGE, pass_clr);
-            else sk.param = ansi_format(FAIL_MESSAGE, fail_clr);
-        }
-        else sk.param = fmtargs.at(param);
-        result.replace(sk.start + sk.offset, param.size(), sk.param);
-        sk.offset += sk.param.size() - param.size();
-    }
-    return result;
+    if (v_ptr == nullptr)
+        return "nullptr";
+    std::stringstream ss;
+    ss << (const void*)v_ptr;
+    return ss.str();
 }
