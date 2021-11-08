@@ -1,35 +1,7 @@
 #include "../include/UnitTest.hpp"
-#include "../include/CaseArg.hpp"
 
 #include <iostream>
-
-using namespace xtst;
-
-
-/**
-* sets an argument generator for a given index
-*
-* @temp-param I  index of the argument generator to set
-* @temp-param T  type of the argument and the given index
-* @param gen  generator to be put at index I
-*/
-template < class Traits >
-template < std::size_t I, class T >
-constexpr void UnitTest<Traits>::SetArgGen( generator_f<T> gen )
-{
-    std::get<I>(arg_gens) = gen;
-}
-
-/**
-* sets argument generators
-*
-* @param gens  pointers to functions that act as argument generators
-*/
-template < class Traits >
-constexpr void UnitTest<Traits>::SetArgGens( gen_types gens )
-{
-    arg_gens = gens;
-}
+#include <sstream>
 
 
 /**
@@ -39,9 +11,9 @@ constexpr void UnitTest<Traits>::SetArgGens( gen_types gens )
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void UnitTest<Traits>::Trust( return_type rtn, input_types input )
+void xtst::UnitTest<Traits>::Trust( return_type rtn, arg_types input )
 {
-    cases.emplace_back({ std::move(rtn), ExpResult::Return }, std::move(input));
+    cases.emplace_back( std::move(rtn), std::move(input));
 }
 
 /**
@@ -50,10 +22,10 @@ void UnitTest<Traits>::Trust( return_type rtn, input_types input )
 * @param inputs  an initializer list of pairs of the expected return value and a tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void UnitTest<Traits>::Trust( ilist<trusted_t> inputs )
+void xtst::UnitTest<Traits>::Trust( ilist<std::pair<return_type, arg_types>> inputs )
 {
-    for (trusted_t icase : inputs)
-        cases.emplace_back({ icase.first, ExpResult::Return }, icase.second);
+    for (std::pair<return_type, arg_types> icase : inputs)
+        cases.emplace_back(icase.first, icase.second);
 }
 
 /**
@@ -62,9 +34,10 @@ void UnitTest<Traits>::Trust( ilist<trusted_t> inputs )
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void UnitTest<Traits>::Doubt( input_types input )
+void xtst::UnitTest<Traits>::Doubt( arg_types input )
 {
-    cases.emplace_back({ nullptr, ExpResult::Error }, std::move(input));
+    // TODO: add checks on the input?
+    cases.emplace_back(nullptr, std::move(input));
 }
 
 /**
@@ -73,38 +46,36 @@ void UnitTest<Traits>::Doubt( input_types input )
 * @param inputs  an initializer list of tuples of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void UnitTest<Traits>::Doubt( ilist<input_types> input )
+void xtst::UnitTest<Traits>::Doubt( ilist<arg_types> input )
 {
-    for (const input_types& iargs : input)
-        cases.emplace_back({ iargs.first, ExpResult::Return }, iargs.second);
+    for (const arg_types& iargs : input)
+        cases.emplace_back(iargs.first, iargs.second);
 }
 
 /**
 * runs registered tests and prints the formatted results to the console.
 */
 template < class Traits >
-void UnitTest<Traits>::RunTests( void )
+void xtst::UnitTest<Traits>::RunTests()
 {
     bool pass;
-    std::string fstring;
+    std::stringstream stream;
     std::unique_ptr<return_type> rtn_ptr = nullptr;
-    std::shared_ptr<return_type> result = nullptr;
-    for (auto _case : cases)
+    result_type result = nullptr;
+    for (auto test_case : cases)
     {
-        const arg_types& args = gen_from_input(_case.second);
-        result = _case.first.first;
-        try
-        {
-            rtn_ptr = std::make_unique(Apply(args));
-        }
-        catch (const AllErrors& err)
-        {
-            rtn_ptr = nullptr;
-        }
+        const arg_types& args = test_case.second;
+        result = test_case.first;
+
+        try { rtn_ptr = std::make_unique(apply(Traits::function, args)); }
+        catch (const all_errors& err) { rtn_ptr = nullptr; }
+
         if (rtn_ptr == nullptr)
             pass = (result == nullptr);
-        else pass = !(result == nullptr && (*rtn_ptr != *result));
-        fstring = formatter.format(pass, result, *rtn_ptr, args);
-        std::cout << fstring << std::endl;
+        else if (result == nullptr)
+            pass = false;
+        else pass = (*rtn_ptr == *result);
+
+        formatter.Format(stream, pass, result, std::move(rtn_ptr), args);
     }
 }

@@ -1,79 +1,38 @@
-///// fizzbuzz.hpp /////
-#ifndef FIZZBUZZ_HPP
-#define FIZZBUZZ_HPP
-
-#include <string>
 #include <iostream>
-#include <string.h>
+#include <string>
+#include "../include/Formatter.hpp"
+#include "../include/FunctionTraits.hpp"
+#include "../include/macrodef.hpp"
+#include "../include/TypeTraits.hpp"
+#include "../include/UnitTest.hpp"
+#include "../include/utils.hpp"
 
 
-std::string fizzbuzz_logic( long long n )
+
+auto fizzbuzz( int n )
 {
-    std::string result;
     if (n % 15 == 0)
-        result = "FizzBuzz";
+        return "FizzBuzz";
     else if (n % 5 == 0)
-        result = "Buzz";
+        return "Buzz";
     else if (n % 3 == 0)
-        result = "Fizz";
-    else result = std::to_string(n);
-    return result;
+        return "Fizz";
+    return std::to_string(n).c_str();
 }
 
-constexpr const char* ce_fizzbuzz_logic( long long n )
+
+using fizzbuzz_traits = xtst::FunctionTraits<decltype(&fizzbuzz), fizzbuzz>;
+using test_fizzbuzz = xtst::UnitTest<fizzbuzz_traits>;
+
+
+int main()
 {
-    return
-      (n % 15 == 0)
-        ? "FizzBuzz"
-        : (n % 5 == 0)
-          ? "Buzz"
-          : (n % 3 == 0)
-            ? "Fizz"
-            : "N"; // TODO: figure out how to make this right
+    test_fizzbuzz::Trust( "Fizz"     , {      6 } );
+    test_fizzbuzz::Trust( "Buzz"     , {     10 } );
+    test_fizzbuzz::Trust( "FizzBuzz" , {  10860 } );
+    test_fizzbuzz::Trust( "16"       , {     16 } );
+    test_fizzbuzz::Trust( "349324"   , { 349324 } );
+    test_fizzbuzz::Trust( "FizzBuzz" , {  64470 } );
+
+    test_fizzbuzz::RunTests();
 }
-
-void FizzBuzz( long long start = 1, long long max = 100 )
-{
-    for (long long n = start; n < max; n++)
-        std::cout << fizzbuzz_logic(n) << std::endl;
-}
-
-constexpr void ce_FizzBuzz( long long start = 1, long long max = 100 )
-{
-    for (long long n = start; n < max; n++)
-        std::cout << ce_fizzbuzz_logic(n) << std::endl;
-}
-
-#endif
-
-///// test.hpp ////
-#ifndef TEST_HPP
-#define TEST_HPP
-
-#include "../X-Test.hpp"
-
-using namespace xtst;
-
-using test_fizzbuzz_logic = UnitTest<FunctionTraits<decltype(&fizzbuzz_logic), fizzbuzz_logic>>;
-using test_ce_fizzbuzz_logic = UnitTest<FunctionTraits<decltype(&ce_fizzbuzz_logic), ce_fizzbuzz_logic>>;
-
-
-test_fizzbuzz_logic::Trust({
-    {"Fizz"    ,{      6 }},
-    {"Buzz"    ,{     10 }},
-    {"FizzBuzz",{  10860 }},
-    {"16"      ,{     16 }},
-    {"349324"  ,{ 349324 }},
-    {"FizzBuzz",{  64470 }},
-});
-
-test_ce_fizzbuzz_logic::Trust({
-    {"Fizz"    ,{      6 }},
-    {"Buzz"    ,{     10 }},
-    {"FizzBuzz",{  10860 }},
-    {"N"       ,{     16 }},
-    {"N"       ,{ 349324 }},
-    {"FizzBuzz",{  64470 }},
-});
-
-#endif

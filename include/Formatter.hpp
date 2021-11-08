@@ -2,39 +2,44 @@
 #define X_TEST_FORMATTER_HPP
 
 #include <string>
+#include <array>
 #include <memory>
 #include <unordered_map>
-#include <initializer_list>
 #include <regex>
+#include <sstream>
 
-#include "FunctionTraits.hpp"
+#include "utils.hpp"
 
 
 namespace xtst
 {
-    template < class T >
-    using ilist = const std::initializer_list<T>&;
+    using fmt_args_t = std::unordered_map<std::string, std::string>;
 
-    typedef std::unordered_map<std::string, std::string> string_map_t;
-
-    template< class Tr >
-    class Formatter final
+    template< class Traits > class Formatter
     {
-        using typename Tr::return_type;
-        using typename Tr::arg_types;
+        using return_type = typename Traits::return_type;
+        using arg_types = typename Traits::arg_types;
 
         explicit constexpr Formatter( void ) = default;
 
-        std::string Format( bool, std::shared_ptr<return_type>,const return_type&, const arg_types& );
+        void Format( std::ostringstream&, bool, std::shared_ptr<return_type>, std::unique_ptr<return_type>, const arg_types& ) const &;
 
         static void SetFormat ( const std::string& );
         static void SetArgPattern ( const std::string& );
 
       private:
-        static const std::regex pattern = std::regex( R"\$\{([a-z\-]+)?}" );
+        static constexpr auto ArgIndices = IndexSeq<Traits::argc>{};
+        static inline const std::regex pattern = std::regex( R"(\$\{([a-z\-]+)?})" );
         static std::string format;
         static std::string arg_pattern;
-        std::pair<string_map_t, std::array<std::string, Tr::argc>> get_args( const return_type&, const arg_types& ) const;
+
+        fmt_args_t get_fmt_args( const std::unique_ptr<return_type>&, const arg_types& ) const &;
+        template < std::size_t...I >
+        std::string format_args( const arg_types&, IntegerSeq<I...> = ArgIndices ) const &;
+        template < class T >
+        std::string format_arg( const T& ) const &;
+        template < class T >
+        void try_str_cvt( std::stringstream&, T* );
     };
 }
 

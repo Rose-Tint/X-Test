@@ -12,6 +12,7 @@
 #      define CPP_STD 11
 #    else
 #      error "X-Test: Standard must be c++11 or later"
+#    endif
 #  endif
 
 // if `if constexpr` can be used, define if_constexpr as

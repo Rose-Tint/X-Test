@@ -7,15 +7,6 @@
 
 namespace xtst
 {
-    inline namespace typetraits { template < class T, class...Ts > constexpr bool in_param_pack( void ); }
-
-    namespace dtl
-    {
-        template < class T, class > struct in_tuple_helper;
-        template < class T, class...Types > struct in_tuple_helper<T, std::tuple<Types...>>
-        { static constexpr bool value = ::xtst::typetraits::in_param_pack<T, Types...>(); }
-    }
-
     inline namespace typetraits
     {
         template < class T, T > struct IntegralConstant;
@@ -27,6 +18,7 @@ namespace xtst
         template < class...Traits > struct TraitsOr;
         template < std::size_t Index, class...Types > struct TypeAt;
         template < class Fn, Fn > struct IsNullFunction;
+        template < class...Types > struct InheritAll;
 
         using TrueType = IntegralConstant<bool, true>;
         using FalseType = IntegralConstant<bool, false>;
@@ -56,13 +48,13 @@ namespace xtst
         template < class T1, class T2 > struct AreSameNaked
             : AreSame<typename std::decay<T1>::type, typename std::decay<T2>::type> { };
 
-        template < std::size_t I, class...Types > struct TypeAt;
-        { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; }
+        template < std::size_t I, class...Types > struct TypeAt
+        { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; };
         // so that a tuple can be passed instead of a pack
         template < std::size_t I, class...Types >
         struct TypeAt<I, std::tuple<Types...>>
         { typedef typename std::tuple_element<I, std::tuple<Types...>>::type type; };
-        template < std::size_t I, class...Types > struct TypeAt
+        template < std::size_t I, class...Types >
         using TypeAt_t = typename TypeAt<I, Types...>::type;
 
         template < template < class > class, class > struct TransformTuple;
@@ -72,9 +64,16 @@ namespace xtst
         template < template<class> class Transformer, class Tuple >
         using TransformTuple_t = typename TransformTuple<Transformer, Tuple>::type;
 
+        template < class If, class Else > struct Conditional<true, If, Else>
+        { using type = If; };
+        template < class If, class Else > struct Conditional<false, If, Else>
+        { using type = Else; };
+        template < bool Cond, class If, class Else >
+        using Conditional_t = typename Conditional<Cond, If, Else>::type;
+
         // traits
-        template < class T, class...Ts > struct InParamPack
-            : Conditional_t<std::true_type, FalseType, And<AreSame<T, Ts>...>> { };
+        // template < class T, class...Ts > struct InParamPack
+            // : Conditional_t<std::true_type, FalseType, TraitsAnd<AreSame<T, Ts>...>> { };
 
         template < class... > struct TraitsAnd // default case
         { static constexpr bool value = true; };
@@ -90,10 +89,13 @@ namespace xtst
         template < class Curr > struct TraitsOr<Curr> // base case
         { static constexpr bool value = Curr::value; };
 
-        template < class Rtn, class...ArgTypes, Rtn(*Func)(ArgTypes...) >
-        struct IsNullFunction<Rtn(*)(ArgTypes...), Func> : FalseType { };
-        template < class Rtn, class...ArgTypes >
-        struct IsNullFunction<Rtn(*)(ArgTypes...), nullptr> : TrueType { };
+        // template < class Fn, Fn fn > struct IsNullFunction : FalseType { };
+        // template < class Fn >
+        // struct IsNullFunction<Fn, nullptr> : TrueType { };
+
+        template < class...Types > struct InheritAll : Types... { };
+        template < class...Types >
+        struct InheritAll<std::tuple<Types...>> : Types... { };
 
         // miscellaneous
         template < std::size_t I, class T > struct IndexedType
@@ -103,7 +105,6 @@ namespace xtst
         };
         template < std::size_t I, class T >
         using IndexedType_t = typename IndexedType<I, T>::type;
-        using IndexedType_i = IndexedType<I, T>::index;
     }
 }
 
