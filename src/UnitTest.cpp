@@ -1,7 +1,9 @@
-#include "../include/UnitTest.hpp"
-
 #include <iostream>
 #include <sstream>
+#include "UnitTest.hpp"
+
+
+using namespace xtst;
 
 
 /**
@@ -11,9 +13,9 @@
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void xtst::UnitTest<Traits>::Trust( return_type rtn, arg_types input )
+void UnitTest<Traits>::Trust(return_type rtn, arg_types input)
 {
-    cases.emplace_back( std::move(rtn), std::move(input));
+    cases.emplace_back(rtn, input);
 }
 
 /**
@@ -22,7 +24,7 @@ void xtst::UnitTest<Traits>::Trust( return_type rtn, arg_types input )
 * @param inputs  an initializer list of pairs of the expected return value and a tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void xtst::UnitTest<Traits>::Trust( ilist<std::pair<return_type, arg_types>> inputs )
+void UnitTest<Traits>::Trust(ilist<std::pair<return_type, arg_types>> inputs)
 {
     for (std::pair<return_type, arg_types> icase : inputs)
         cases.emplace_back(icase.first, icase.second);
@@ -34,10 +36,10 @@ void xtst::UnitTest<Traits>::Trust( ilist<std::pair<return_type, arg_types>> inp
 * @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void xtst::UnitTest<Traits>::Doubt( arg_types input )
+void UnitTest<Traits>::Doubt(arg_types input)
 {
     // TODO: add checks on the input?
-    cases.emplace_back(nullptr, std::move(input));
+    cases.emplace_back(nullptr, input);
 }
 
 /**
@@ -46,7 +48,7 @@ void xtst::UnitTest<Traits>::Doubt( arg_types input )
 * @param inputs  an initializer list of tuples of arguments or instances of an ArgGenerator to use as the test case's arguments
 */
 template < class Traits >
-void xtst::UnitTest<Traits>::Doubt( ilist<arg_types> input )
+void UnitTest<Traits>::Doubt(ilist<arg_types> input)
 {
     for (const arg_types& iargs : input)
         cases.emplace_back(iargs.first, iargs.second);
@@ -56,7 +58,7 @@ void xtst::UnitTest<Traits>::Doubt( ilist<arg_types> input )
 * runs registered tests and prints the formatted results to the console.
 */
 template < class Traits >
-void xtst::UnitTest<Traits>::RunTests()
+void UnitTest<Traits>::RunTests()
 {
     bool pass;
     std::stringstream stream;
@@ -76,6 +78,6 @@ void xtst::UnitTest<Traits>::RunTests()
             pass = false;
         else pass = (*rtn_ptr == *result);
 
-        formatter.Format(stream, pass, result, std::move(rtn_ptr), args);
+        formatter::Format(stream, pass, result, std::move(rtn_ptr), args);
     }
 }

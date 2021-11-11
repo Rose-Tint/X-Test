@@ -19,8 +19,8 @@ namespace xtst
     template < class Traits > class UnitTest final : public Traits
     {
       public:
-        using return_type = typename Traits::return_type;
-        using arg_types = typename Traits::arg_types;
+        typedef typename Traits::return_type return_type;
+        typedef typename Traits::arg_types arg_types;
 
         UnitTest() = delete;
 
@@ -31,17 +31,16 @@ namespace xtst
         static void RunTests( void );
 
       private:
-        using error_types = typename Traits::error_types;
+        typedef typename Traits::error_types error_types;
         typedef std::shared_ptr<return_type> result_type;
-        typedef Formatter<Traits> format_type;
+        typedef Formatter<Traits> formatter;
         typedef std::unique_ptr<result_type> case_rtn_type;
         typedef InheritAll<error_types> all_errors;
 
         static constexpr return_type run_case( arg_types );
         static constexpr bool is_exp_error( void );
 
-        static std::vector<std::pair<return_type, arg_types>> cases;
-        static constexpr const format_type formatter = format_type();
+        static inline std::vector<std::pair<return_type, arg_types>> cases { };
         static constexpr auto function = Traits::function;
     };
 

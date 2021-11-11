@@ -3,7 +3,9 @@
 #include <ostream>
 #include <unordered_map>
 
+
 using namespace xtst;
+
 
 /**
 * @param test_passed  whether or not the test being formatted passed
@@ -13,11 +15,11 @@ using namespace xtst;
 * @return  a formatted string
 */
 template < class Traits >
-void Formatter<Traits>::Format( std::ostream& stream,
+void Formatter<Traits>::Format(std::ostream& stream,
                                 bool test_passed,
                                 std::shared_ptr<return_type> exp,
                                 std::unique_ptr<return_type> rtn,
-                                const arg_types& args ) const &
+                                const arg_types& args)
 {
     // readability > memory.
     std::size_t end_pos = 0, pos = 0;
@@ -44,6 +46,7 @@ void Formatter<Traits>::Format( std::ostream& stream,
     }
 }
 
+
 /**
 * @param rtn  return value of the tested case
 * @param args  arguments used in the tested case
@@ -51,7 +54,7 @@ void Formatter<Traits>::Format( std::ostream& stream,
 *     and an array of string values of args if possible, else "unavailable"
 */
 template < class Traits >
-fmt_args_t Formatter<Traits>::get_fmt_args( const std::unique_ptr<return_type>& rtn, const arg_types& args ) const &
+fmt_args_t Formatter<Traits>::get_fmt_args(const std::unique_ptr<return_type>& rtn, const arg_types& args)
 {
     std::string rtn_t_str = type_name<return_type>();
     std::string sig_str = rtn_t_str+"(*)("+type_name_csl<arg_types>()+")";
@@ -63,6 +66,7 @@ fmt_args_t Formatter<Traits>::get_fmt_args( const std::unique_ptr<return_type>& 
     };
 }
 
+
 /**
 * outputs the address of a pointer, or nullptr. this function gets overloaded only if type T
 * cannot be converted to `std::string`
@@ -72,12 +76,13 @@ fmt_args_t Formatter<Traits>::get_fmt_args( const std::unique_ptr<return_type>& 
 */
 template < class Traits >
 template < class T >
-void Formatter<Traits>::try_str_cvt( std::stringstream& stream, T* v_ptr )
+void Formatter<Traits>::try_str_cvt(std::stringstream& stream, T* v_ptr)
 {
     if (v_ptr == nullptr)
         stream << "nullptr";
     stream << (void*)v_ptr;
 }
+
 
 /**
 * formats args according to `arg_pattern`
@@ -86,7 +91,7 @@ void Formatter<Traits>::try_str_cvt( std::stringstream& stream, T* v_ptr )
 */
 template < class Traits >
 template < std::size_t...I >
-std::string Formatter<Traits>::format_args( const arg_types& args, IntegerSeq<I...> ) const &
+std::string Formatter<Traits>::format_args(const arg_types& args, IntegerSeq<I...>)
 {
     std::string arg_str;
     std::array<std::string, sizeof...(I)> arg_arr { format_arg(std::get<I>(args))... };
@@ -96,19 +101,23 @@ std::string Formatter<Traits>::format_args( const arg_types& args, IntegerSeq<I.
     return arg_str.substr(0, arg_str.size() - 2);
 }
 
+
 template < class T >
-static std::string addr_to_str( T* v_ptr )
+static inline std::string addr_to_str(T* v_ptr)
 {
     std::stringstream ss;
     ss << (void*)v_ptr;
     return ss.str();
 }
 
+
 /**
+* @param arg  argument to return a formating map
+* @return a map containing formatting params as keys, and their respective values based on properties of `arg`
 */
 template < class Traits >
 template < class T >
-std::string Formatter<Traits>::format_arg( const T& arg ) const &
+std::string Formatter<Traits>::format_arg(const T& arg)
 {
     const fmt_args_t fmt_args
     {
