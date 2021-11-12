@@ -2,14 +2,14 @@
 #define X_TEST_FORMATTER_HPP
 
 #include <string>
-#include <array>
 #include <memory>
 #include <unordered_map>
 #include <regex>
 #include <initializer_list>
+#include <iostream>
 #include <ostream>
 
-#include "./utils.hpp"
+#include "utils.hpp"
 
 
 namespace xtst
@@ -39,7 +39,7 @@ namespace xtst
         Formatter(void) = default;
 
       private:
-        static constexpr auto ArgIdxs = utl::IndexSeq<sizeof...(ArgTs)>{};
+        static constexpr auto ArgIdxs = IndexSeq<sizeof...(ArgTs)>{};
         static inline const std::regex pattern = std::regex(R"(\$\{([a-z\-]+)?})");
         static inline std::string format =
             "${func-name} -> ${result}\n"
@@ -49,7 +49,7 @@ namespace xtst
 
         static fmt_args_t get_fmt_args(const return_ptr_t&, const arg_tuple_t&);
         template < std::size_t...I >
-        static std::string format_args(const arg_tuple_t&, utl::IntegerSeq<I...>);
+        static std::string format_args(const arg_tuple_t&, IntegerSeq<I...>);
         template < class T >
         static std::string format_arg(const T&);
     };
@@ -84,6 +84,7 @@ namespace xtst
                                     return_ptr_t rtn,
                                     const arg_tuple_t& args)
     {
+        std::cout << "begin Format" << std::endl;
         // readability > memory.
         std::size_t end_pos = 0, pos = 0;
         std::string param, fmt_arg, match_str;
@@ -107,6 +108,7 @@ namespace xtst
             pos = match.position(i);
             stream << format.substr(end_pos, pos) << fmt_arg;
         }
+        std::cout << "end Format" << std::endl;
     }
 
 
@@ -119,14 +121,16 @@ namespace xtst
     template < class Rtn, class...ArgTypes, Rtn(*Func)(ArgTypes...) >
     fmt_args_t Formatter<Rtn(*)(ArgTypes...), Func>::get_fmt_args(const return_ptr_t& rtn, const arg_tuple_t& args)
     {
+        std::cout << "begin get_fmt_args" << std::endl;
         std::string rtn_t_str = type_str<Rtn>();
         std::string sig_str = rtn_t_str+"(*)("+type_csl<arg_tuple_t>()+")";
+        std::cout << "end get_fmt_args" << std::endl;
         return fmt_args_t {
-            { "return"      , utl::try_str_cvt(&rtn)      },
-            { "return-type" , rtn_t_str                   },
-            { "signature"   , sig_str                     },
-            { "func-name"   , type_str<decltype(Func)>()  },
-            { "args"        , format_args(args, ArgIdxs)  },
+            { "return"      , try_str_cvt(&rtn)     },
+            { "return-type" , rtn_t_str                  },
+            { "signature"   , sig_str                    },
+            { "func-name"   , type_str<decltype(Func)>() },
+            { "args"        , format_args(args, ArgIdxs) },
         };
     }
 
@@ -140,10 +144,12 @@ namespace xtst
     template < std::size_t...I >
     std::string Formatter<Rtn(*)(ArgTypes...), Func>::format_args(const arg_tuple_t& args, IntegerSeq<I...>)
     {
+        std::cout << "in format_args" << std::endl;
         std::string arg_str;
         ilist<std::string> arg_list { format_arg(std::get<I>(args))... };
         for (const std::string& str : arg_list)
             arg_str.append(str);
+        std::cout << "end format_args" << std::endl;
         return arg_str;
     }
 
@@ -151,8 +157,10 @@ namespace xtst
     template < class T >
     std::string addr_to_str(T* v_ptr)
     {
+        std::cout << "in addr_to_str" << std::endl;
         std::stringstream ss;
         ss << (void*)v_ptr;
+        std::cout << "end addr_to_str" << std::endl;
         return ss.str();
     }
 
@@ -165,11 +173,12 @@ namespace xtst
     template < class T >
     std::string Formatter<Rtn(*)(ArgTypes...), Func>::format_arg(const T& arg)
     {
+        std::cout << "begin format_args" << std::endl;
         const fmt_args_t fmt_args
         {
             { "index"   , 0                      }, // TODO
             { "type"    , type_str<T>()         },
-            { "value"   , utl::try_str_cvt(&arg) },
+            { "value"   , try_str_cvt(&arg) },
             { "address" , addr_to_str(&arg)      },
         };
         std::string fstr = arg_pattern, param;
@@ -185,6 +194,7 @@ namespace xtst
             fstr.replace(pos, pos - end_pos, fmt_args.at(param));
         }
 
+        std::cout << "end format_args" << std::endl;
         return fstr;
     }
 }

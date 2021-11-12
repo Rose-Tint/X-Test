@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "./Formatter.hpp"
+#include "Formatter.hpp"
 
 
 namespace xtst
@@ -31,36 +31,43 @@ namespace xtst
 
       private:
         typedef std::shared_ptr<Rtn> return_ptr_t;
-        typedef std::shared_ptr<Rtn> result_ptr_t;
         typedef Formatter<Rtn(*)(ArgTs...), Func> formatter;
 
-        static inline std::vector<std::pair<return_ptr_t, std::tuple<ArgTs...>>> cases { };
+        static std::vector<std::pair<return_ptr_t, std::tuple<ArgTs...>>> cases;
     };
 }
+
+
+template < class Rtn, class...ArgTs, Rtn(*Func)(ArgTs...) >
+std::vector<std::pair<std::shared_ptr<Rtn>, std::tuple<ArgTs...>>> xtst::UnitTest<Rtn(*)(ArgTs...), Func>::cases = { };
 
 
 /**
 * registers the given values as a case that should run without errors, and return a value equivilant to the specified value
 *
 * @param rtn  expected return value
-* @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
+* @param input  tuple of arguments to use as the test case's arguments
 */
 template < class Rtn, class...ArgTs, Rtn(*Func)(ArgTs...) >
 void xtst::UnitTest<Rtn(*)(ArgTs...), Func>::Trust(Rtn rtn, ArgTs...input)
 {
+    std::cout << "begin Trust" << std::endl;
     cases.push_back({ std::make_shared<Rtn>(rtn), { input... } });
+    std::cout << "end Trust" << std::endl;
 }
 
 
 /**
 * registers the given values as a case that should throw one of any of the errors given in the given FunctionTraits class
 *
-* @param input  tuple of arguments or instances of an ArgGenerator to use as the test case's arguments
+* @param input  tuple of arguments to use as the test case's arguments
 */
 template < class Rtn, class...ArgTs, Rtn(*Func)(ArgTs...) >
 void xtst::UnitTest<Rtn(*)(ArgTs...), Func>::Doubt(ArgTs... input)
 {
+    std::cout << "begin Doubt" << std::endl;
     cases.push_back({ nullptr, { input... } });
+    std::cout << "end Doubt" << std::endl;
 }
 
 
@@ -70,10 +77,11 @@ void xtst::UnitTest<Rtn(*)(ArgTs...), Func>::Doubt(ArgTs... input)
 template < class Rtn, class...ArgTs, Rtn(*Func)(ArgTs...) >
 void xtst::UnitTest<Rtn(*)(ArgTs...), Func>::RunTests()
 {
+    std::cout << "begin RunTests" << std::endl;
     bool pass;
     std::stringstream stream;
     return_ptr_t rtn_ptr = nullptr;
-    result_ptr_t result = nullptr;
+    return_ptr_t result = nullptr;
     for (const auto& test_case : cases)
     {
         const std::tuple<ArgTs...>& args = test_case.second;
@@ -90,6 +98,7 @@ void xtst::UnitTest<Rtn(*)(ArgTs...), Func>::RunTests()
 
         formatter::Format(stream, pass, result, rtn_ptr, args);
     }
+    std::cout << "end RunTests" << std::endl;
 }
 
 
